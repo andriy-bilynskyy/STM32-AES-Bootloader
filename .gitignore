@@ -1,0 +1,8 @@
+**/*.o
+**/*.O
+**/*.d
+**/*.elf
+**/*.hex
+**/*.map
+**/*.enc
+encrypter/hex-encrypter
