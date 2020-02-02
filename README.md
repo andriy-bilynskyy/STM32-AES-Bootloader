@@ -1,5 +1,8 @@
 # STM32 AES Bootloader
 
+## YouTube demo
+https://www.youtube.com/watch?v=qMqJ9Rkrz3s
+
 ## Software description
 
 That's very easy to protect commercial embedded software from copying - just set flash lock bit on your MCU. But there is open question during maintain: How to deliver software updates caused by implementing new features or bug fixing? In that case Bootloader is used, it's small application which is started after MCU start and somehow able to update flash with new main application and start running application.
