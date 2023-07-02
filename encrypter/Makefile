@@ -30,7 +30,7 @@ OBJECTS := ${addsuffix .O, ${PROJECT_CSRC}}
 
 CFLAGS  := -g3 -O1 -Wall -std=gnu99 -fdata-sections -ffunction-sections
 
-LDFLAGS := -Wl,--gc-sections
+LDFLAGS := -Wl,--gc-sections -static
 
 BINFLAGS := -r -b binary
 

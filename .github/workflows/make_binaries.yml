@@ -1,0 +1,42 @@
+name: Make binaries
+
+on: workflow_dispatch
+
+jobs:
+  bootloader_mk_bin:
+    runs-on: ubuntu-latest
+    name: Make binaries
+    steps:
+
+    - name: Install toolchain
+      run: |
+        mkdir ~/arm_toolchain
+        wget -q -P ~/arm_toolchain https://developer.arm.com/-/media/Files/downloads/gnu/12.2.mpacbti-rel1/binrel/arm-gnu-toolchain-12.2.mpacbti-rel1-x86_64-arm-none-eabi.tar.xz
+        sudo tar xf ~/arm_toolchain/arm-gnu-toolchain-12.2.mpacbti-rel1-x86_64-arm-none-eabi.tar.xz -C /opt
+        rm -rf ~/arm_toolchain
+
+    - name: Checkout sources
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
+        fetch-depth: 0
+
+    - name: Build (bootloader, encrypter and encrypted test application)
+      run: |
+        (cd keys/ && ./keygen.sh)
+        make clean build
+        (cd test_app/ && make clean build)
+        (cd encrypter/ && make clean build run)
+
+    - name: Collect artifacts
+      run: |
+        mkdir build_artifacts
+        cp stm32-bl.hex                     build_artifacts
+        cp test_app/stm32-app.hex.enc       build_artifacts
+        cp encrypter/hex-encrypter          build_artifacts
+
+    - name: Publish artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        path: |
+          build_artifacts/*
