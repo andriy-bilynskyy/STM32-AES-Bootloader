@@ -1,0 +1,17 @@
+name: Make binaries
+
+on: workflow_dispatch
+
+jobs:
+  bootloader_mk_bin:
+    runs-on: ubuntu-latest
+    name: Make binaries
+    steps:
+
+    - name: Install toolchain
+      run: |
+        sudo apt update
+        mkdir ~/arm_toolchain
+        wget -q -P ~/arm_toolchain https://developer.arm.com/-/media/Files/downloads/gnu/12.2.mpacbti-rel1/binrel/arm-gnu-toolchain-12.2.mpacbti-rel1-x86_64-arm-none-eabi.tar.xz
+        sudo tar xf ~/arm-toolchain/arm-gnu-toolchain-12.2.mpacbti-rel1-x86_64-arm-none-eabi.tar.xz?rev=71e595a1f2b6457bab9242bc4a40db90 -C ~/opt
+        ls -la /opt
