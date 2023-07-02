@@ -1,7 +1,7 @@
 /*
 *****************************************************************************
 **
-**  (C) 2020 Andrii Bilynskyi <andriy.bilynskyy@gmail.com>
+**  (C) 2023 Andrii Bilynskyi <andriy.bilynskyy@gmail.com>
 **
 **  This code is licensed under the MIT.
 **
@@ -18,7 +18,7 @@
 typedef bool (*stm_hex_on_word_t)(uint32_t addr, uint16_t data);
 
 
-bool stm_hex_feed(const char * str);
+bool stm_hex_feed(const char *str);
 void stm_hex_set_callback(stm_hex_on_word_t on_word);
 
 

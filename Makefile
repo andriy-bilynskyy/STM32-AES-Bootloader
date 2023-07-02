@@ -1,6 +1,6 @@
 #****************************************************************************
 #*
-#*  (C) 2020 Andrii Bilynskyi <andriy.bilynskyy@gmail.com>
+#*  (C) 2023 Andrii Bilynskyi <andriy.bilynskyy@gmail.com>
 #*
 #*  This code is licensed under the MIT.
 #*
@@ -47,6 +47,15 @@ INCLUDE_PATH := \
   config/stubs \
   src/usb \
   src \
+
+PROJECT_STYLE := \
+  ${wildcard src/*.[ch]} ${wildcard src/*.cpp} \
+  ${wildcard src/usb/*.[ch]} \
+  ${wildcard hex_parser/*.[ch]} \
+  ${wildcard encrypter/*.[ch]} \
+  ${wildcard test_app/*.[ch]} \
+  ${wildcard config/*.[ch]} \
+  ${wildcard config/stubs/*.[ch]} \
 
 LDLIBS := \
   stdc++ \
@@ -97,7 +106,7 @@ endif
 CFLAGS  += ${addprefix -I, ${INCLUDE_PATH}}
 CXXFLAGS  += ${addprefix -I, ${INCLUDE_PATH}}
 
-.PHONY: all build clean flash erase debug help
+.PHONY: all build clean flash erase debug check style help
 
 all: ${PROJECT}.elf
 
@@ -135,7 +144,7 @@ flash:
             -c "shutdown";                                                      \
   else                                                                          \
     echo "Output .hex file doesn't exist. Run 'make all' before!";              \
-  fi
+  fi                                                                            \
 
 erase:
 	openocd -f openocd/jlink.cfg -f openocd/stm32f1x.cfg                          \
@@ -161,7 +170,21 @@ debug:
     kill -9 $$!;                                                                \
   else                                                                          \
     echo "Output .elf file doesn't exist. Run 'make all' before!";              \
-  fi
+  fi                                                                            \
+
+check:
+	cppcheck  -q --enable=style,performance,portability,information               \
+            --force --inconclusive --inline-suppr ${PROJECT_STYLE}              \
+            --suppress=missingInclude --suppress=ConfigurationNotChecked        \
+
+
+style:
+	astyle  --style=linux --convert-tabs --lineend=linux --suffix=none            \
+           --indent=spaces=4                                                    \
+           --max-code-length=100  --delete-empty-lines --add-braces             \
+           --unpad-paren --pad-oper --pad-comma --pad-header                    \
+           --align-pointer=name --align-reference=name                          \
+           ${PROJECT_STYLE}                                                     \
 
 help:
 	$(info Help)
@@ -173,6 +196,8 @@ help:
 	$(info make flash                    - flash target)
 	$(info make erase                    - flash erase)
 	$(info make debug                    - start debugging session DDD(gdb))
+	$(info make check                    - static analyse (cppcheck))
+	$(info make style                    - format sources (asyle))
 	$(info ---------------------------------------------------------------------)
 	$(info Available build_type [DEBUG RELEASE], eg: make BUILD=RELEASE ...)
 	$(info Default build_type DEBUG)

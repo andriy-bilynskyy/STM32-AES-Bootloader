@@ -1,7 +1,7 @@
 /*
 ********************************************************************************
 **
-**  (C) 2020 Andrii Bilynskyi <andriy.bilynskyy@gmail.com>
+**  (C) 2023 Andrii Bilynskyi <andriy.bilynskyy@gmail.com>
 **
 **  This code is licensed under the MIT.
 **
@@ -12,12 +12,12 @@
 #define __CLI_H
 
 
-#include "bl_conf.h"
+#include <bl_conf.h>
 #include <stdint.h>
 
 
 void cli_init(void);
-uint8_t cli_process(const char * input, char * output, uint32_t output_size);
+uint8_t cli_process(const char *input, char *output, uint32_t output_size);
 uint32_t app_adderess(void);
 
 #if defined(LED_PORT) && defined(LED_PIN)

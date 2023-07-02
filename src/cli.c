@@ -1,7 +1,7 @@
 /*
 ********************************************************************************
 **
-**  (C) 2020 Andrii Bilynskyi <andriy.bilynskyy@gmail.com>
+**  (C) 2023 Andrii Bilynskyi <andriy.bilynskyy@gmail.com>
 **
 **  This code is licensed under the MIT.
 **
@@ -9,9 +9,9 @@
 */
 
 #include "cli.h"
-#include "stm32f10x_conf.h"
-#include "FreeRTOS.h"
-#include "FreeRTOS_CLI.h"
+#include <stm32f10x_conf.h>
+#include <FreeRTOS.h>
+#include <FreeRTOS_CLI.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
@@ -27,11 +27,11 @@ static char program_status[256] =       "NA.\r\n\r\n";
 static bool command_mode = true;
 
 
-static bool on_flash_word(uint32_t addr, uint16_t data) {
+static bool on_flash_word(uint32_t addr, uint16_t data)
+{
     bool result = false;
-
-    if(addr >= bl_data_get_app_first_addr() && addr < bl_data_get_app_last_addr()) {
-        if(FLASH_ProgramHalfWord(addr, data) == FLASH_COMPLETE) {
+    if (addr >= bl_data_get_app_first_addr() && addr < bl_data_get_app_last_addr()) {
+        if (FLASH_ProgramHalfWord(addr, data) == FLASH_COMPLETE) {
             result = true;
         } else {
             uint32_t len = strlen(program_status);
@@ -57,7 +57,8 @@ static bool on_flash_word(uint32_t addr, uint16_t data) {
 
 static bool led_locked = false;
 
-void led_init(void) {
+void led_init(void)
+{
     GPIO_InitTypeDef GPIO_InitStruct_LED;
     GPIO_InitStruct_LED.GPIO_Pin = LED_PIN;
     GPIO_InitStruct_LED.GPIO_Speed = GPIO_Speed_50MHz;
@@ -66,7 +67,8 @@ void led_init(void) {
     led_state(0);
 }
 
-void led_deinit(void) {
+void led_deinit(void)
+{
     led_state(0);
     GPIO_InitTypeDef GPIO_InitStruct_LED;
     GPIO_InitStruct_LED.GPIO_Pin = LED_PIN;
@@ -75,9 +77,10 @@ void led_deinit(void) {
     GPIO_Init(LED_PORT, &GPIO_InitStruct_LED);
 }
 
-void led_state(uint8_t on) {
-    if(!led_locked) {
-        if(on) {
+void led_state(uint8_t on)
+{
+    if (!led_locked) {
+        if (on) {
             GPIO_ResetBits(LED_PORT, LED_PIN);
         } else {
             GPIO_SetBits(LED_PORT, LED_PIN);
@@ -88,25 +91,24 @@ void led_state(uint8_t on) {
 
 #ifdef LED_CLI_CTL
 static BaseType_t cmd_led_ctl(char *pcWriteBuffer, size_t xWriteBufferLen,
-                              const char *pcCommandString) {
+                              const char *pcCommandString)
+{
     BaseType_t len = 0;
-    const char * param = FreeRTOS_CLIGetParameter(pcCommandString, 1, &len);
-
-    if(!strncmp(param, "on", len)) {
+    const char *param = FreeRTOS_CLIGetParameter(pcCommandString, 1, &len);
+    if (!strncmp(param, "on", len)) {
         led_locked = true;
         GPIO_ResetBits(LED_PORT, LED_PIN);
         strncpy(pcWriteBuffer, cmd_done, xWriteBufferLen);
-    } else if(!strncmp(param, "off", len)) {
+    } else if (!strncmp(param, "off", len)) {
         led_locked = true;
         GPIO_SetBits(LED_PORT, LED_PIN);
         strncpy(pcWriteBuffer, cmd_done, xWriteBufferLen);
-    } else if(!strncmp(param, "unlock", len)) {
+    } else if (!strncmp(param, "unlock", len)) {
         led_locked = false;
         strncpy(pcWriteBuffer, cmd_done, xWriteBufferLen);
     } else {
         strncpy(pcWriteBuffer, cmd_wrong_param, xWriteBufferLen);
     }
-
     return pdFALSE;
 }
 
@@ -122,11 +124,11 @@ static const CLI_Command_Definition_t led_ctl = {
 
 
 static BaseType_t cmd_info(char *pcWriteBuffer, size_t xWriteBufferLen,
-                           const char *pcCommandString) {
+                           const char *pcCommandString)
+{
     static uint8_t iteration = 0;
     BaseType_t result = pdTRUE;
-
-    switch(iteration) {
+    switch (iteration) {
     case 0:
         strncpy(pcWriteBuffer, "Boot Loader: 0x", xWriteBufferLen);
         iteration = 1;
@@ -213,25 +215,24 @@ static const CLI_Command_Definition_t info = {
 
 
 static BaseType_t cmd_erase(char *pcWriteBuffer, size_t xWriteBufferLen,
-                            const char *pcCommandString) {
+                            const char *pcCommandString)
+{
     static uint32_t erase_addr = 0;
     BaseType_t result = pdTRUE;
-
-    if(!erase_addr) {
+    if (!erase_addr) {
         FLASH_Unlock();
         FLASH_ClearFlag(FLASH_FLAG_PGERR | FLASH_FLAG_WRPRTERR);
         erase_addr = bl_data_get_app_first_addr();
     }
-    if(erase_addr <= bl_data_get_app_last_addr()) {
-        if(bl_data_is_page_clean(erase_addr)) {
+    if (erase_addr <= bl_data_get_app_last_addr()) {
+        if (bl_data_is_page_clean(erase_addr)) {
             strncpy(pcWriteBuffer, "-", xWriteBufferLen);
         } else {
-            if(FLASH_ErasePage(erase_addr) == FLASH_COMPLETE) {
+            if (FLASH_ErasePage(erase_addr) == FLASH_COMPLETE) {
                 strncpy(pcWriteBuffer, "*", xWriteBufferLen);
             } else {
                 strncpy(pcWriteBuffer, "!", xWriteBufferLen);
             }
-
         }
         erase_addr += FLASH_PAGE_SIZE;
     } else {
@@ -253,16 +254,16 @@ static const CLI_Command_Definition_t erase = {
 
 
 static BaseType_t cmd_program(char *pcWriteBuffer, size_t xWriteBufferLen,
-                              const char *pcCommandString) {
+                              const char *pcCommandString)
+{
     BaseType_t result = cmd_erase(pcWriteBuffer, xWriteBufferLen, pcCommandString);
-    if(result == pdFALSE) {
+    if (result == pdFALSE) {
         strncpy(pcWriteBuffer, "\r\nNow send your .hex file as ASCII.\r\n\r\n", xWriteBufferLen);
         stm_hex_set_callback(on_flash_word);
         program_status[0] = '\0';
         FLASH_Unlock();
         command_mode = false;
     }
-
     return result;
 }
 
@@ -275,9 +276,9 @@ static const CLI_Command_Definition_t program = {
 
 
 static BaseType_t cmd_status(char *pcWriteBuffer, size_t xWriteBufferLen,
-                             const char *pcCommandString) {
+                             const char *pcCommandString)
+{
     strncpy(pcWriteBuffer, program_status, xWriteBufferLen);
-
     return pdFALSE;
 }
 
@@ -288,7 +289,8 @@ static const CLI_Command_Definition_t status = {
     0
 };
 
-void cli_init(void) {
+void cli_init(void)
+{
 #if defined(LED_PORT) && defined(LED_PIN) && defined(LED_CLI_CTL)
     FreeRTOS_CLIRegisterCommand(&led_ctl);
 #endif
@@ -298,13 +300,14 @@ void cli_init(void) {
     FreeRTOS_CLIRegisterCommand(&status);
 }
 
-uint8_t cli_process(const char * input, char * output, uint32_t output_size) {
+uint8_t cli_process(const char *input, char *output, uint32_t output_size)
+{
     uint8_t result = 0;
-    if(command_mode) {
+    if (command_mode) {
         result = FreeRTOS_CLIProcessCommand(input, output, output_size);
     } else {
-        if(stm_hex_feed(input)) {
-            if(!strncmp(input, ":00000001FF", 11)) {
+        if (stm_hex_feed(input)) {
+            if (!strncmp(input, ":00000001FF", 11)) {
                 uint32_t len = strlen(program_status);
                 strncpy(&program_status[len], "Program OK!\r\n\r\n", sizeof(program_status) - len);
                 FLASH_Lock();
@@ -325,6 +328,7 @@ uint8_t cli_process(const char * input, char * output, uint32_t output_size) {
     return result;
 }
 
-uint32_t app_adderess(void) {
+uint32_t app_adderess(void)
+{
     return bl_data_get_app_first_addr();
 }

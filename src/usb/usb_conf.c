@@ -1,14 +1,14 @@
 /*
 ********************************************************************************
 **
-**  (C) 2020 Andrii Bilynskyi <andriy.bilynskyy@gmail.com>
+**  (C) 2023 Andrii Bilynskyi <andriy.bilynskyy@gmail.com>
 **
 **  This code is licensed under the MIT.
 **
 ********************************************************************************
 */
 
-#include "usb_lib.h"
+#include <usb_lib.h>
 
 
 /*******************************************************************************
@@ -104,15 +104,15 @@ static const uint8_t usb_cdc_vendor_str_descriptor[] = {
     0x16,     /* bLength: Vendor string Descriptor size */
     0x03,     /* bDescriptorType: String */
     /* Manufacturer: "EmSoftware" */
-    'E',0,'m',0,'S',0,'o',0,'f',0,'t',0,'w',0,'a',0,'r',0,'e',0
+    'E', 0, 'm', 0, 'S', 0, 'o', 0, 'f', 0, 't', 0, 'w', 0, 'a', 0, 'r', 0, 'e', 0
 };
 
 static const uint8_t usb_cdc_product_str_descriptor[] = {
     0x22,     /* bLength: Product string Descriptor size */
     0x03,     /* bDescriptorType: String */
     /* Product name: "Virtual COM Port" */
-    'V',0,'i',0,'r',0,'t',0,'u',0,'a',0,'l',0,' ',0,'C',0,'O',0,'M',0,' ',0,
-    'P',0,'o',0,'r',0,'t',0
+    'V', 0, 'i', 0, 'r', 0, 't', 0, 'u', 0, 'a', 0, 'l', 0, ' ', 0, 'C', 0, 'O', 0, 'M', 0, ' ', 0,
+    'P', 0, 'o', 0, 'r', 0, 't', 0
 };
 
 
@@ -125,26 +125,26 @@ DEVICE Device_Table = {
 };
 
 ONE_DESCRIPTOR Device_Descriptor = {
-    (uint8_t*)usb_cdc_device_descriptor,
+    (uint8_t *)usb_cdc_device_descriptor,
     sizeof(usb_cdc_device_descriptor)
 };
 
 ONE_DESCRIPTOR Config_Descriptor = {
-    (uint8_t*)usb_cdc_config_descriptor,
+    (uint8_t *)usb_cdc_config_descriptor,
     sizeof(usb_cdc_config_descriptor)
 };
 
 ONE_DESCRIPTOR String_Descriptor[] = {
     {
-        (uint8_t*)usb_cdc_lang_id_descriptor,
+        (uint8_t *)usb_cdc_lang_id_descriptor,
         sizeof(usb_cdc_lang_id_descriptor)
     },
     {
-        (uint8_t*)usb_cdc_vendor_str_descriptor,
+        (uint8_t *)usb_cdc_vendor_str_descriptor,
         sizeof(usb_cdc_vendor_str_descriptor)
     },
     {
-        (uint8_t*)usb_cdc_product_str_descriptor,
+        (uint8_t *)usb_cdc_product_str_descriptor,
         sizeof(usb_cdc_product_str_descriptor)
     }
 };
@@ -158,9 +158,9 @@ static RESULT usb_cdc_data_setup(uint8_t RequestNo);
 static RESULT usb_cdc_no_data_setp(uint8_t RequestNo);
 static RESULT usb_cdc_get_interface_settings(uint8_t Interface,
         uint8_t AlternateSetting);
-static uint8_t * usb_cdc_get_device_descriptor(uint16_t Length);
-static uint8_t * usb_cdc_get_config_descriptor(uint16_t Length);
-static uint8_t * usb_cdc_get_str_descriptor(uint16_t Length);
+static uint8_t *usb_cdc_get_device_descriptor(uint16_t Length);
+static uint8_t *usb_cdc_get_config_descriptor(uint16_t Length);
+static uint8_t *usb_cdc_get_str_descriptor(uint16_t Length);
 
 static void usb_cdc_set_configuration(void);
 
@@ -196,36 +196,30 @@ USER_STANDARD_REQUESTS User_Standard_Requests = {
 extern bool usb_cdc_ready;
 
 
-static void usb_cdc_init(void) {
+static void usb_cdc_init(void)
+{
     usb_cdc_ready = FALSE;
-
     /* Set Virtual_Com_Port DEVICE as not configured */
     pInformation->Current_Configuration = 0;
-
     /* Connect the device */
     _SetCNTR(CNTR_FRES);
     wInterrupt_Mask = 0;
     _SetCNTR(wInterrupt_Mask);
     SetISTR(0);
-
     /* Perform basic device initialization operations */
     USB_SIL_Init();
 }
 
-static void usb_cdc_reset(void) {
+static void usb_cdc_reset(void)
+{
     usb_cdc_ready = FALSE;
-
     /* Set Virtual_Com_Port DEVICE as not configured */
     pInformation->Current_Configuration = 0;
-
     /* Current Feature initialization */
     pInformation->Current_Feature = usb_cdc_config_descriptor[7];
-
     /* Set Virtual_Com_Port DEVICE with the default Interface*/
     pInformation->Current_Interface = 0;
-
     SetBTABLE(BTABLE_ADDRESS);
-
     /* Initialize Endpoint 0 */
     SetEPType(ENDP0, EP_CONTROL);
     SetEPTxStatus(ENDP0, EP_TX_STALL);
@@ -234,26 +228,22 @@ static void usb_cdc_reset(void) {
     Clear_Status_Out(ENDP0);
     SetEPRxCount(ENDP0, Device_Property.MaxPacketSize);
     SetEPRxValid(ENDP0);
-
     /* Initialize Endpoint 1 */
     SetEPType(ENDP1, EP_BULK);
     SetEPTxAddr(ENDP1, ENDP1_TXADDR);
     SetEPTxStatus(ENDP1, EP_TX_NAK);
     SetEPRxStatus(ENDP1, EP_RX_DIS);
-
     /* Initialize Endpoint 2 */
     SetEPType(ENDP2, EP_INTERRUPT);
     SetEPTxAddr(ENDP2, ENDP2_TXADDR);
     SetEPRxStatus(ENDP2, EP_RX_DIS);
     SetEPTxStatus(ENDP2, EP_TX_NAK);
-
     /* Initialize Endpoint 3 */
     SetEPType(ENDP3, EP_BULK);
     SetEPRxAddr(ENDP3, ENDP3_RXADDR);
     SetEPRxCount(ENDP3, USB_CDC_EP3_PACK);
     SetEPRxStatus(ENDP3, EP_RX_VALID);
     SetEPTxStatus(ENDP3, EP_TX_DIS);
-
     /* Set this device to response on default address */
     SetDeviceAddress(0);
 }
@@ -262,33 +252,39 @@ static void usb_cdc_in(void) {}
 
 static void usb_cdc_out(void) {}
 
-static RESULT usb_cdc_data_setup(uint8_t RequestNo) {
+static RESULT usb_cdc_data_setup(uint8_t RequestNo)
+{
     return USB_UNSUPPORT;
 }
 
-static RESULT usb_cdc_no_data_setp(uint8_t RequestNo) {
+static RESULT usb_cdc_no_data_setp(uint8_t RequestNo)
+{
     return USB_UNSUPPORT;
 }
 
 static RESULT usb_cdc_get_interface_settings(uint8_t Interface,
-        uint8_t AlternateSetting) {
+        uint8_t AlternateSetting)
+{
     RESULT result = USB_UNSUPPORT;
-    if(!Interface && !AlternateSetting) {
+    if (!Interface && !AlternateSetting) {
         result = USB_SUCCESS;
     }
     return result;
 }
 
-static uint8_t * usb_cdc_get_device_descriptor(uint16_t Length) {
+static uint8_t *usb_cdc_get_device_descriptor(uint16_t Length)
+{
     return Standard_GetDescriptorData(Length, &Device_Descriptor);
 }
 
-static uint8_t * usb_cdc_get_config_descriptor(uint16_t Length) {
+static uint8_t *usb_cdc_get_config_descriptor(uint16_t Length)
+{
     return Standard_GetDescriptorData(Length, &Config_Descriptor);
 }
 
-static uint8_t * usb_cdc_get_str_descriptor(uint16_t Length) {
-    uint8_t * result = NULL;
+static uint8_t *usb_cdc_get_str_descriptor(uint16_t Length)
+{
+    uint8_t *result = NULL;
     uint8_t w_value = pInformation->USBwValue0;
     if (w_value <= 2) {
         result = Standard_GetDescriptorData(Length,
@@ -297,10 +293,10 @@ static uint8_t * usb_cdc_get_str_descriptor(uint16_t Length) {
     return result;
 }
 
-static void usb_cdc_set_configuration(void) {
+static void usb_cdc_set_configuration(void)
+{
     DEVICE_INFO *pInfo = &Device_Info;
-
-    if(pInfo->Current_Configuration) {
+    if (pInfo->Current_Configuration) {
         usb_cdc_ready = TRUE;
     }
 }

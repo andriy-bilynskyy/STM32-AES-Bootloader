@@ -1,7 +1,7 @@
 /*
 ********************************************************************************
 **
-**  (C) 2020 Andrii Bilynskyi <andriy.bilynskyy@gmail.com>
+**  (C) 2023 Andrii Bilynskyi <andriy.bilynskyy@gmail.com>
 **
 **  This code is licensed under the MIT.
 **
@@ -13,7 +13,7 @@
 #define __FREE_RTOS_TASK_STUB_H
 
 
-#include "stm32f10x_conf.h"
+#include <stm32f10x_conf.h>
 #include <stdlib.h>
 
 
