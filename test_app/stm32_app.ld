@@ -32,7 +32,7 @@
 /* Specify the memory areas */
 MEMORY
 {
-  FLASH (rx)      : ORIGIN = 0x08004c00, LENGTH = 45K
+  FLASH (rx)      : ORIGIN = 0x08003c00, LENGTH = 49K
   RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 20K
   MEMORY_B1 (rx)  : ORIGIN = 0x60000000, LENGTH = 0K
 }

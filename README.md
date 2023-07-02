@@ -20,11 +20,11 @@ That software is solving both issues.
 
 To encrypt application .hex file the **AES-128** algorithm is used in **CTR mode**. Encrypted file seems as valid .hex file but all memory content is encrypted so it's possible to flash it but it will do nothing.
 
-All software are compilable under Linux, see https://github.com/andriy-bilynskyy/STM32-Linux for details.
+All software are compileable under Linux, see https://github.com/andriy-bilynskyy/STM32-Linux for details.
 
 For debug prints semihosting is used (SEGGER RTT seems better but bootloader is used for commercial software in that case I avoid using non fully free software.)
 
-For demonstration cheap **Blue-Pill** STM32 board is used https://ru.aliexpress.com/item/STM32F103C8T6-ARM-STM32-arduino/32887666464.html?spm=2114.13010708.0.0.134f33edtKnEcc. The software can be adopted to use another hardware (Just configuration for another stm32f1x MCUs, replacing HAL for another MCUs).
+For demonstration cheap **Blue-Pill** STM32 board is used https://www.aliexpress.com/item/32792513237.html. The software can be adopted to use another hardware (Just configuration for another stm32f1x MCUs, replacing HAL for another MCUs).
 
 ## Software components
 
@@ -34,13 +34,13 @@ For demonstration cheap **Blue-Pill** STM32 board is used https://ru.aliexpress.
 
 - tiny-AES-c. https://github.com/kokke/tiny-AES-c
 
-- FreeRTOS+CLI https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_CLI/FreeRTOS_Plus_Command_Line_Interface.html (Used only cli files. To make it compilable created FreeRTOS stubs.)
+- FreeRTOS+CLI https://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_CLI/FreeRTOS_Plus_Command_Line_Interface.html (Used only cli files. To make it compileable created FreeRTOS stubs.)
 
 ## How to use
 
 Update AES secret (for testing you can use existing)
 
-	./keys/keygen.sh
+	(cd keys/ && ./keygen.sh)
 
 Compile bootloder
 
@@ -79,21 +79,19 @@ In terninal:
 	 Program status
 
 	info
-	Boot Loader: 0x8000000 - 0x8004b33 (19252 bytes)
-	Application: 0x8004c00 - 0x800ffff (46080 bytes)
+	Boot Loader: 0x8000000 - 0x8003a03 (14852 bytes)
+	Application: 0x8003c00 - 0x800ffff (50176 bytes)
 	Page size: 1024 bytes
 
 *Exit terminal and start with test application downloading*
 
 Compile test application
 
-	cd test_app/
-	make clean build
+	(cd test_app/ && make clean build)
 
 Encrypt application
 
-	cd ../encrypter/
-	make clean build run
+	(cd encrypter/ && make clean build run)
 
 As result you have encrypted application **test_app/stm32-app.hex.enc** path from project root.
 

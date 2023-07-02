@@ -7,7 +7,7 @@
 #****************************************************************************
 
 
-TOOLCHAIN_PATH := /opt/gcc-arm-none-eabi-9-2019-q4-major
+TOOLCHAIN_PATH := /opt/arm-gnu-toolchain-12.2.mpacbti-rel1-x86_64-arm-none-eabi
 
 
 CC     := ${TOOLCHAIN_PATH}/bin/arm-none-eabi-gcc
@@ -86,9 +86,9 @@ ifeq ($(BUILD),DEBUG)
   CXXFLAGS += -g3 -O1 -DUSE_FULL_ASSERT -DDEBUG
   LDFLAGS += --specs=rdimon.specs
 else ifeq ($(BUILD),RELEASE)
-  CFLAGS  += -g0 -O3
-  ASFLAGS += -g0 -O3
-  CXXFLAGS += -g0 -O3
+  CFLAGS  += -g0 -Os
+  ASFLAGS += -g0 -Os
+  CXXFLAGS += -g0 -Os
   LDFLAGS += --specs=nosys.specs
 else
   $(error Wrong BUILD '$(BUILD)'! Should be: DEBUG or RELEASE)
@@ -141,7 +141,7 @@ erase:
 	openocd -f openocd/jlink.cfg -f openocd/stm32f1x.cfg                          \
             -c "init"                                                           \
             -c "reset init"                                                     \
-            -c "flash protect 0 0 63 off"                                       \
+            -c "flash protect 0 0 15 off"                                       \
             -c "stm32f1x unlock 0"                                              \
             -c "reset halt"                                                     \
             -c "reset init"                                                     \
@@ -158,7 +158,7 @@ debug:
                                             -ex 'monitor reset halt'            \
                                             -ex 'load'                          \
                                             -ex 'monitor reset halt'";          \
-    kill $$!;                                                                   \
+    kill -9 $$!;                                                                \
   else                                                                          \
     echo "Output .elf file doesn't exist. Run 'make all' before!";              \
   fi

@@ -7,7 +7,7 @@
 #****************************************************************************
 
 
-TOOLCHAIN_PATH := /opt/gcc-arm-none-eabi-9-2019-q4-major
+TOOLCHAIN_PATH := /opt/arm-gnu-toolchain-12.2.mpacbti-rel1-x86_64-arm-none-eabi
 
 
 CC     := ${TOOLCHAIN_PATH}/bin/arm-none-eabi-gcc
